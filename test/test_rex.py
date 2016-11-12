@@ -1,6 +1,6 @@
 import re
 import unittest
-from rex_writer import Rex
+from models import Rex
 
 
 ########################################################################################################################
@@ -9,30 +9,25 @@ class TestReWrite(unittest.TestCase):
     ####################################################################################################################
     def test_write(self):
         # set an initial value for expression
+        blah = "blah"
         rex = Rex.write.b.l.a.h
-        self.assertEqual("blah", rex.expression())
-
-        # write property should overwrite _expression to an empty list
-        rex.write
-        self.assertEqual([], rex._expression)
-
-        # expression method should return _expression attribute
-        self.assertEqual("", rex.expression())
+        self.assertEqual(blah, rex.expression())
 
         # since each property returns 'self', calling more will
         # append more characters to _expression/expression()
         carlos = "Carlos"
-        rex2 = rex.C.a.r.l.o.s
-        self.assertEqual(carlos, rex.expression())
+        rex2 = rex.write.C.a.r.l.o.s
+        self.assertEqual(blah, rex.expression())
         self.assertEqual(carlos, rex2.expression())
 
         # if 'write' property is called_expression should be reset to empty string
         # making more calls to properties after that will result in a new expression
         rex3 = rex.write.s.c.a.r
-        self.assertEqual("scar", rex.expression())
+        self.assertEqual(blah, rex.expression())
+        self.assertEqual(carlos, rex2.expression())
 
         # each rex object should be the same
-        self.assertEquals(rex, rex2, rex3)
+        self.assertNotEquals(rex, rex2, rex3)
 
     ####################################################################################################################
     def test_5_digit_zip_code(self):
