@@ -4,7 +4,7 @@ from models import Rex
 
 
 ########################################################################################################################
-class TestReWrite(unittest.TestCase):
+class TestRex(unittest.TestCase):
 
     ####################################################################################################################
     def test_write(self):
@@ -15,16 +15,22 @@ class TestReWrite(unittest.TestCase):
 
         # since each property returns 'self', calling more will
         # append more characters to _expression/expression()
+        blahbloop = blah + "bloop"
+        rex = rex.b.l.o.o.p
+        self.assertEqual(blahbloop, rex.expression())
+
         carlos = "Carlos"
         rex2 = rex.write.C.a.r.l.o.s
-        self.assertEqual(blah, rex.expression())
+        self.assertEqual(blahbloop, rex.expression())
         self.assertEqual(carlos, rex2.expression())
 
         # if 'write' property is called_expression should be reset to empty string
         # making more calls to properties after that will result in a new expression
-        rex3 = rex.write.s.c.a.r
-        self.assertEqual(blah, rex.expression())
+        timestamp = "10\-22\-2016\s7:51\sam"
+        rex3 = rex.write._1._0.dash._2._2.dash._2._0._1._6.single_space._7.colon._5._1.single_space.a.m
+        self.assertEqual(blahbloop, rex.expression())
         self.assertEqual(carlos, rex2.expression())
+        self.assertEqual(timestamp, rex3.expression())
 
         # each rex object should be the same
         self.assertNotEquals(rex, rex2, rex3)
