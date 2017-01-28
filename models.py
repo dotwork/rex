@@ -1,20 +1,18 @@
+import re
+
+
 ########################################################################################################################
 class Node(object):
     """Base object in a Rexpression tree
     """
 
     ####################################################################################################################
-    def __init__(self, name, literal):
+    def __init__(self, name, literal, prefix=None, suffix=None):
         self.name = name
         self.literal = literal
         self.children = []
-        self.prefix = None
-        self.suffix = None
-
-    ####################################################################################################################
-    @property
-    def parts(self):
-        return [self.prefix] + self.children + [self.suffix]
+        self.prefix = prefix
+        self.suffix = suffix
 
     ####################################################################################################################
     def add_child(self, node):
@@ -22,14 +20,20 @@ class Node(object):
 
     ####################################################################################################################
     def serialize(self):
-        yield self.prefix or ""
-        yield self.literal
-
+        # yield self.prefix or ""
+        # yield self.literal
+        #
+        # for c in self.children:
+        #     for part in c.serialize():
+        #         yield part
+        #
+        # yield self.suffix or ""
+        parts = [self.prefix, self.literal] if self.prefix else [self.literal]
         for c in self.children:
-            for part in c.serialize():
-                yield part
-
-        yield self.suffix or ""
+            parts.extend(c.serialize())
+        if self.suffix:
+            parts.append(self.suffix)
+        return parts
 
 
 ########################################################################################################################
@@ -40,9 +44,13 @@ class Rexpression(object):
 
     ####################################################################################################################
     def __init__(self, node=None):
-        node = node or Node("", "")
-        self.root = node
-        self.last_added = node
+        self.root = node or Node("", "")
+        self.last_added = self.root
+        self.group_parent = None
+
+    ####################################################################################################################
+    def compile(self):
+        return re.compile(self.expression())
 
     ####################################################################################################################
     @property
@@ -51,13 +59,18 @@ class Rexpression(object):
 
     ####################################################################################################################
     def expression(self):
-        return "".join(part for part in self.root.serialize())
+        return "".join(self.root.serialize())
 
     ####################################################################################################################
-    def add_node(self, name, expression, parent=None):
-        node = Node(name, expression)
-        parent = parent or self.last_added
+    def get_parent(self):
+        return self.group_parent or self.last_added
+
+    ####################################################################################################################
+    def add_node(self, name, expression, prefix=None, suffix=None, parent=None):
+        node = Node(name, expression, prefix=prefix, suffix=suffix)
+        parent = parent or self.get_parent()
         parent.add_child(node)
+        self.last_added = node
 
     ####################################################################################################################
     @property
@@ -73,8 +86,28 @@ class Rexpression(object):
 
     ####################################################################################################################
     @property
+    def group(self):
+        self.add_node("group_start", "(", suffix=")")
+        self.group_parent = self.last_added
+        return self
+
+    ####################################################################################################################
+    @property
+    def end_group(self):
+        self.group_parent = None
+        return self
+
+    ####################################################################################################################
+    @property
     def digits(self):
-        self.add_node("digits", "\d")
+        self.last_added.prefix = "\d{"
+        self.last_added.suffix = "}"
+        return self
+
+    ####################################################################################################################
+    @property
+    def exactly(self):
+        self.add_node("exactly", "{", suffix="}", parent=self.last_added)
         return self
 
     ####################################################################################################################
@@ -158,7 +191,7 @@ class Rexpression(object):
     ####################################################################################################################
     @property
     def dash(self):
-        self.add_node("dash", "\-")
+        self.add_node("dash", "-")
         return self
 
     ####################################################################################################################

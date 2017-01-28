@@ -1,6 +1,6 @@
 import re
 import unittest
-from models import Rex
+from models import Rex, Node
 
 
 ########################################################################################################################
@@ -26,7 +26,7 @@ class TestRex(unittest.TestCase):
 
         # if 'write' property is called_expression should be reset to empty string
         # making more calls to properties after that will result in a new expression
-        timestamp = "10\-22\-2016\s7:51\sam"
+        timestamp = re.compile("10-22-2016 7:51 am")
         rex3 = rex.write._1._0.dash._2._2.dash._2._0._1._6.single_space._7.colon._5._1.single_space.a.m
         self.assertEqual(blahbloop, rex.expression())
         self.assertEqual(carlos, rex2.expression())
@@ -37,7 +37,7 @@ class TestRex(unittest.TestCase):
 
     ####################################################################################################################
     def test_5_digit_zip_code(self):
-        expected_expression = r"\d{5,}"
+        expected_expression = r"\d{5}"
         pattern = re.compile(expected_expression)
 
         zip_code = "73139"
@@ -46,7 +46,8 @@ class TestRex(unittest.TestCase):
         result = re.search(pattern, text_with_zip_code).group()
         self.assertEqual(zip_code, result)
 
-        rex = Rex.write.exactly._5.digits
+        # 5 digits
+        rex = Rex.write._5.digits
         expression = rex.expression()
         self.assertEqual(expected_expression, expression)
 
@@ -54,56 +55,31 @@ class TestRex(unittest.TestCase):
         self.assertEqual(zip_code, result)
 
     ####################################################################################################################
+    def assert_expression(self, text, value, rex, re_compiled):
+        result = re.search(re_compiled, text).groups()
+        self.assertEqual(value, result)
+
+        rex_result = re.search(rex.compile(), text).groups()
+        self.assertEqual(value, rex_result)
+
+    ####################################################################################################################
     def test_phone_number_pattern__with_dashes(self):
-        expected_expression = r"(\d{3,}\-\d{3,}\-\d{4,})"
-        pattern = re.compile(expected_expression)
-
-        rex = Rex.write.phone_number_pattern(dashes=True)
-        expression = rex.expression()
-        self.assertEqual(expected_expression, expression)
-
-        phone_number = "405-867-5309"
-        text_with_phone_number = "blah{} blah 723".format(phone_number)
-
-        result = re.search(pattern, text_with_phone_number).group()
-        self.assertEqual(phone_number, result)
-
-        result = re.search(rex.compile(), text_with_phone_number).group()
-        self.assertEqual(phone_number, result)
+        rex = Rex.write.group._3.digits.dash._3.digits.dash._4.digits.end_group
+        self.assert_expression(text="blah405-867-5309 blah 723", value=("405-867-5309", ),
+                               rex=rex, re_compiled=re.compile(r"(\d{3}-\d{3}-\d{4})"))
 
     ####################################################################################################################
     def test_phone_number_pattern__with_dots(self):
-        expected_expression = r"(\d{3,}\.\d{3,}\.\d{4,})"
-        pattern = re.compile(expected_expression)
-
-        rex = Rex.write.phone_number_pattern(dots=True)
-        self.assertEqual(expected_expression, rex.expression())
-
-        phone_number = "405.867.5309"
-        text_with_phone_number = "blah{} blah 723".format(phone_number)
-
-        result = re.search(pattern, text_with_phone_number).group()
-        self.assertEqual(phone_number, result)
-
-        result = re.search(rex.compile(), text_with_phone_number).group()
-        self.assertEqual(phone_number, result)
+        rex = Rex.write.group._3.digits.dot._3.digits.dot._4.digits.end_group
+        self.assert_expression(text="blah405.867.5309 blah 723", value=("405.867.5309", ),
+                               rex=rex, re_compiled=re.compile("(\d{3}\.\d{3}\.\d{4})"))
 
     ####################################################################################################################
     def test_phone_number_pattern__with_parenthesis(self):
-        phone_number = "(405) 867-5309"
-        text_with_phone_number = "blah{} blah 723".format(phone_number)
-
-        expected_expression = r"(\(\d{3,}\)\s\d{3,}\-\d{4,})"
-        pattern = re.compile(expected_expression)
-
-        result = re.search(pattern, text_with_phone_number).group()
-        self.assertEqual(phone_number, result)
-
-        rex = Rex.write.phone_number_pattern(parenthesis=True)
-        self.assertEqual(expected_expression, rex.expression())
-
-        result = re.search(rex.compile(), text_with_phone_number).group()
-        self.assertEqual(phone_number, result)
+        rex = Rex.write.group.open_parenthesis._3.digits.close_parenthesis.\
+            single_space._3.digits.dash._4.digits.end_group
+        self.assert_expression(text="blah(405) 867-5309 blah 723", value=("(405) 867-5309", ),
+                               rex=rex, re_compiled=re.compile("(\(\d{3}\)\s\d{3}-\d{4})"))
 
     ####################################################################################################################
     def test_phone_number_pattern__extract_digits(self):
@@ -148,7 +124,3 @@ class TestRex(unittest.TestCase):
 
         expression = rex.expression()
         self.assertEqual(expected_expression, expression)
-
-    ####################################################################################################################
-    def test_(self):
-        self.assertEqual(("blah", ), Rex.add_rex_tuple.closer)
