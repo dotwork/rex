@@ -37,7 +37,7 @@ class Node(object):
 
 
 ########################################################################################################################
-class Rexpression(object):
+class Rex(object):
     """Builds elements of a regular expression into a tree data structure
     using Node objects. The primary node is stored on the attribute 'root'.
     """
@@ -51,11 +51,6 @@ class Rexpression(object):
     ####################################################################################################################
     def compile(self):
         return re.compile(self.expression())
-
-    ####################################################################################################################
-    @property
-    def write(self):
-        return Rexpression()
 
     ####################################################################################################################
     def expression(self):
@@ -744,6 +739,3 @@ class Rexpression(object):
     @property
     def decimal_point(self):
         return self.dot
-
-
-Rex = Rexpression()
