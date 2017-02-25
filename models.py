@@ -7,33 +7,56 @@ class Node(object):
     """
 
     ####################################################################################################################
-    def __init__(self, name, literal, prefix=None, suffix=None):
+    def __init__(self, name, literal, prefix="", suffix="", escape=False, parent=None):
         self.name = name
         self.literal = literal
-        self.children = []
         self.prefix = prefix
         self.suffix = suffix
+        self.children = []
+        self.parent = parent
+        self.escape = escape
+
+    ####################################################################################################################
+    def __str__(self):
+        s = "{prefix}{literal}{children}{suffix}"
+        return s.format(prefix=self.prefix,
+                        literal=self.literal,
+                        children="<children>" if self.children else "",
+                        suffix=self.suffix)
+
+    ####################################################################################################################
+    def __repr__(self):
+        return self.__str__()
 
     ####################################################################################################################
     def add_child(self, node):
         self.children.append(node)
 
     ####################################################################################################################
-    def serialize(self):
-        # yield self.prefix or ""
-        # yield self.literal
-        #
-        # for c in self.children:
-        #     for part in c.serialize():
-        #         yield part
-        #
-        # yield self.suffix or ""
-        parts = [self.prefix, self.literal] if self.prefix else [self.literal]
+    def traverse(self):
+        yield self
         for c in self.children:
-            parts.extend(c.serialize())
-        if self.suffix:
-            parts.append(self.suffix)
-        return parts
+            yield c
+            for descendant in c.traverse():
+                yield descendant
+
+    ####################################################################################################################
+    def serialize(self):
+        print("SERIALIZING: {}".format(self))
+        print("ESCAPING: {}".format(self.escape))
+        if self.escape:
+            self.prefix = re.escape(self.prefix)
+            self.literal = re.escape(self.literal)
+            self.suffix = re.escape(self.suffix)
+
+        print("Prefix: {}".format(self.prefix))
+        yield self.prefix
+        print("Literal: {}".format(self.literal))
+        yield self.literal
+        for child in self.children:
+            yield from child.serialize()
+        print("Suffix: {}".format(self.suffix))
+        yield self.suffix
 
 
 ########################################################################################################################
@@ -44,9 +67,9 @@ class Rex(object):
 
     ####################################################################################################################
     def __init__(self, node=None):
-        self.root = node or Node("", "")
+        self.root = node
         self.last_added = self.root
-        self.group_parent = None
+        self.parent = self.root
 
     ####################################################################################################################
     def compile(self):
@@ -54,18 +77,23 @@ class Rex(object):
 
     ####################################################################################################################
     def expression(self):
-        return "".join(self.root.serialize())
+        parts = list(self.root.serialize())
+        return "".join(parts)
 
     ####################################################################################################################
-    def get_parent(self):
-        return self.group_parent or self.last_added
+    # def get_parent(self):
+    #     return self.parent or self.last_added
 
     ####################################################################################################################
-    def add_node(self, name, expression, prefix=None, suffix=None, parent=None):
-        node = Node(name, expression, prefix=prefix, suffix=suffix)
-        parent = parent or self.get_parent()
-        parent.add_child(node)
+    def add_node(self, name, literal, prefix="", suffix="", parent=None):
+        node = Node(name, literal, prefix=prefix, suffix=suffix)
+        node.parent = self.parent
+
         self.last_added = node
+        if not self.root:
+            self.root = node
+        if self.parent:
+            self.parent.add_child(node)
 
     ####################################################################################################################
     @property
@@ -82,14 +110,14 @@ class Rex(object):
     ####################################################################################################################
     @property
     def group(self):
-        self.add_node("group_start", "(", suffix=")")
-        self.group_parent = self.last_added
+        self.add_node("group", "(", suffix=")")
+        self.parent = self.last_added
         return self
 
     ####################################################################################################################
     @property
     def end_group(self):
-        self.group_parent = None
+        self.parent = self.parent.parent
         return self
 
     ####################################################################################################################

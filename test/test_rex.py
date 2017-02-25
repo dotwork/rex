@@ -12,6 +12,7 @@ class RexAssertions(unittest.TestCase):
         re_groups = re.search(re_compiled, text).groups()
         self.assertEqual(expected_groups, re_groups)
 
+        print(rex.expression())
         rex_groups = re.search(rex.compile(), text).groups()
         self.assertEqual(expected_groups, rex_groups)
 
@@ -37,7 +38,7 @@ class TestRexGroup(RexAssertions):
     ####################################################################################################################
     def test_multiple_groups_in_parenthesis(self):
         rex = (Rex().group.open_parenthesis.a.b.c.close_parenthesis.end_group
-               .asterisk
+               .dot.asterisk.question_mark
                .group.open_parenthesis.e.f.g.close_parenthesis.end_group)
         re_compiled = re.compile("(\(abc\)).*?(\(efg\))")
         expected_groups = ("(abc)", "(efg)")
