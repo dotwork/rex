@@ -12,7 +12,7 @@ class RexAssertions(unittest.TestCase):
         re_groups = re.search(re_compiled, text).groups()
         self.assertEqual(expected_groups, re_groups)
 
-        print(rex.expression())
+        print("Rex expression: ", rex.expression())
         rex_groups = re.search(rex.compile(), text).groups()
         self.assertEqual(expected_groups, rex_groups)
 
@@ -38,7 +38,7 @@ class TestRexGroup(RexAssertions):
     ####################################################################################################################
     def test_multiple_groups_in_parenthesis(self):
         rex = (Rex().group.open_parenthesis.a.b.c.close_parenthesis.end_group
-               .dot.asterisk.question_mark
+               .any_character.optional
                .group.open_parenthesis.e.f.g.close_parenthesis.end_group)
         re_compiled = re.compile("(\(abc\)).*?(\(efg\))")
         expected_groups = ("(abc)", "(efg)")
@@ -54,7 +54,7 @@ class TestRex(RexAssertions):
     ####################################################################################################################
     def assert_expression(self, text, rex, re_compiled):
         self.assertTrue(re.search(re_compiled, text))
-        self.assertTrue(re.search(Rex().compile(), text))
+        self.assertTrue(re.search(rex.compile(), text))
 
     ####################################################################################################################
     def test_write(self):
@@ -124,12 +124,8 @@ class TestRex(RexAssertions):
                .group._3.digits.end_group
                .dash
                .group._4.digits.end_group)
-        s = "\((\d{3})\)\s(\d{3})-(\d{4})"
-        # re_compiled = re.compile()
-        print(s)
-        print(Rex().expression())
-        self.assertEqual(s, rex.expression())
-        # self.assert_groups(text="Phone number (405) 867-5309.",
-        #                    rex=rex,
-        #                    re_compiled=re_compiled,
-        #                    expected_groups=("405", "867", "5309"))
+        re_compiled = re.compile("\((\d{3})\)\s(\d{3})-(\d{4})")
+        self.assert_groups(text="Phone number (405) 867-5309.",
+                           rex=rex,
+                           re_compiled=re_compiled,
+                           expected_groups=("405", "867", "5309"))

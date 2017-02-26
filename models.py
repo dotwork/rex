@@ -18,11 +18,14 @@ class Node(object):
 
     ####################################################################################################################
     def __str__(self):
-        s = "{prefix}{literal}{children}{suffix}"
-        return s.format(prefix=self.prefix,
-                        literal=self.literal,
-                        children="<children>" if self.children else "",
-                        suffix=self.suffix)
+        if self.name == "root":
+            return "<root>"
+        else:
+            s = "{prefix}{literal}{children}{suffix}"
+            return s.format(prefix=self.prefix,
+                            literal=self.literal,
+                            children="<children>" if self.children else "",
+                            suffix=self.suffix)
 
     ####################################################################################################################
     def __repr__(self):
@@ -66,8 +69,8 @@ class Rex(object):
     """
 
     ####################################################################################################################
-    def __init__(self, node=None):
-        self.root = node
+    def __init__(self):
+        self.root = Node("root", "")
         self.last_added = self.root
         self.parent = self.root
 
@@ -81,19 +84,19 @@ class Rex(object):
         return "".join(parts)
 
     ####################################################################################################################
-    # def get_parent(self):
-    #     return self.parent or self.last_added
-
-    ####################################################################################################################
     def add_node(self, name, literal, prefix="", suffix="", parent=None):
         node = Node(name, literal, prefix=prefix, suffix=suffix)
+        print("Creating new {name} node: {repr}".format(name=name, repr=node))
         node.parent = self.parent
+        print("Added parent {name}: {repr}".format(name=node.parent.name, repr=node.parent))
 
         self.last_added = node
         if not self.root:
             self.root = node
+            print("Added as root node.")
         if self.parent:
             self.parent.add_child(node)
+            print("Added as child node to {name}: {repr}".format(name=self.parent.name, repr=self.parent))
 
     ####################################################################################################################
     @property
@@ -122,7 +125,20 @@ class Rex(object):
 
     ####################################################################################################################
     @property
+    def any_character(self):
+        self.add_node("any_character", ".*")
+        return self
+
+    ####################################################################################################################
+    @property
+    def optional(self):
+        self.add_node("optional", "?")
+        return self
+
+    ####################################################################################################################
+    @property
     def digits(self):
+        print("digits: adding prefix and suffix.")
         self.last_added.prefix = "\d{"
         self.last_added.suffix = "}"
         return self
