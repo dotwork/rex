@@ -19,11 +19,13 @@ class RexAssertions(unittest.TestCase):
     ####################################################################################################################
     def assert_groups(self, text, rex, re_compiled, expected_groups):
         re_groups = re.search(re_compiled, text).groups()
-        self.assertEqual(expected_groups, re_groups)
+        msg = "Regular expression failed: {} != {}".format(tuple(expected_groups), re_groups)
+        self.assertEqual(tuple(expected_groups), re_groups, msg=msg)
 
         print("Rex expression: ", rex.expression())
         rex_groups = re.search(rex.compile(), text).groups()
-        self.assertEqual(tuple(expected_groups), rex_groups)
+        msg = "Rex expression failed: {} != {}".format(tuple(expected_groups), rex_groups)
+        self.assertEqual(tuple(expected_groups), rex_groups, msg=msg)
 
 
 ########################################################################################################################
@@ -47,7 +49,7 @@ class TestRexGroup(RexAssertions):
     ####################################################################################################################
     def test_multiple_groups_in_parenthesis(self):
         rex = (Rex().group.open_parenthesis.a.b.c.close_parenthesis.end_group
-               .any_character.optional
+               .zero_or_more_of_any_character.optional
                .group.open_parenthesis.e.f.g.close_parenthesis.end_group)
         re_compiled = re.compile("(\(abc\)).*?(\(efg\))")
         expected_groups = ("(abc)", "(efg)")
@@ -142,22 +144,22 @@ class TestRex(RexAssertions):
     ####################################################################################################################
     def test_html_brackets(self):
         text = "<span>heyo</span>"
-        rex = (Rex().open_bracket.s.p.a.n.close_bracket
+        rex = (Rex().less_than_sign.s.p.a.n.greater_than_sign
                .group.zero_or_more_of.any_character.end_group
-               .open_bracket.forwardslash.s.p.a.n.close_bracket)
-        re_compiled = re.compile("<span>.*</span>")
-        # self.assert_groups(text=text,
-        #                    rex=rex,
-        #                    re_compiled=re_compiled,
-        #                    expected_groups=["heyo"])
+               .less_than_sign.forwardslash.s.p.a.n.greater_than_sign)
+        re_compiled = re.compile("<span>(.*)</span>")
+        self.assert_groups(text=text,
+                           rex=rex,
+                           re_compiled=re_compiled,
+                           expected_groups=["heyo"])
 
     ####################################################################################################################
-    def test_price(self):
+    # def test_price(self):
         # text = """<span class="price current-price">$19.99</span>"""
-        text = self.load("bn_taming_fire.html")
-        rex = (Rex().c.l.a.s.s.equals.double_quote
-               .p.r.i.c.e.single_space.c.u.r.r.e.n.t.dash.p.r.i.c.e
-               .double_quote.end_bracket.dollar_sign
-               .group._)
+        # text = self.load("bn_taming_fire.html")
+        # rex = (Rex().c.l.a.s.s.equals.double_quote
+        #        .p.r.i.c.e.single_space.c.u.r.r.e.n.t.dash.p.r.i.c.e
+        #        .double_quote.end_bracket.dollar_sign
+        #        .group._)
         # self.fail("Test brackets")
         # self.fail("Test variable number of digits")

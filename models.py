@@ -30,7 +30,19 @@ class Node(object):
 
     ####################################################################################################################
     def add_child(self, node):
+        node.parent = self
+        print("\tAdded parent: {}".format(node.parent))
         self.children.append(node)
+        print("\tAdded as child node to {}".format(self))
+
+    ####################################################################################################################
+    def add_children(self, nodes):
+        for n in nodes:
+            n.parent = self
+            print("\tAdded {} as parent.".format(self))
+
+        self.children.extend(nodes)
+        print("\nAdded {} as children to {}".format(nodes, self))
 
     ####################################################################################################################
     def serialize(self):
@@ -65,6 +77,7 @@ class Rex(object):
         self.root = Node("root", "")
         self.last_added = self.root
         self.parent = self.root
+        self.modifiers = []
 
     ####################################################################################################################
     def compile(self):
@@ -80,12 +93,12 @@ class Rex(object):
         print("\nCreating new node: {}".format(node))
 
         self.last_added = node
+        self.parent.add_child(node)
 
-        node.parent = self.parent
-        print("\tAdded parent: {}".format(node.parent))
-        if self.parent:
-            self.parent.add_child(node)
-            print("\tAdded as child node to {}".format(self.parent))
+        if self.modifiers:
+            print("\nAdding modifiers: {}".format(self.modifiers))
+            self.parent.add_children(self.modifiers)
+            self.modifiers = []
 
     ####################################################################################################################
     @property
@@ -117,7 +130,7 @@ class Rex(object):
     ####################################################################################################################
     @property
     def any_character(self):
-        self.add_node("any_character", ".*")
+        self.add_node("any_character", ".")
         return self
 
     ####################################################################################################################
@@ -138,6 +151,19 @@ class Rex(object):
     @property
     def exactly(self):
         self.add_node("exactly", "{", suffix="}", parent=self.last_added)
+        return self
+
+    ####################################################################################################################
+    @property
+    def zero_or_more_of(self):
+        node = Node("zero_or_more_of", "*")
+        self.modifiers.append(node)
+        return self
+
+    ####################################################################################################################
+    @property
+    def zero_or_more_of_any_character(self):
+        self.add_node("zero_or_more_of_any_character", ".*")
         return self
 
     ####################################################################################################################
@@ -276,6 +302,18 @@ class Rex(object):
     @property
     def close_bracket(self):
         self.add_node("close_bracket", "\]")
+        return self
+
+    ####################################################################################################################
+    @property
+    def less_than_sign(self):
+        self.add_node("less_than_sign", "<")
+        return self
+
+    ####################################################################################################################
+    @property
+    def greater_than_sign(self):
+        self.add_node("greater_than_sign", ">")
         return self
 
     ####################################################################################################################
