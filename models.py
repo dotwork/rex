@@ -3,8 +3,7 @@ import re
 
 ########################################################################################################################
 class Node(object):
-    """Base object in a Rexpression tree
-    """
+    """Base object in a Rex tree"""
 
     ####################################################################################################################
     def __init__(self, name, literal, prefix="", suffix="", escape=False, parent=None):
@@ -18,14 +17,12 @@ class Node(object):
 
     ####################################################################################################################
     def __str__(self):
-        if self.name == "root":
-            return "<root>"
-        else:
-            s = "{prefix}{literal}{children}{suffix}"
-            return s.format(prefix=self.prefix,
-                            literal=self.literal,
-                            children="<children>" if self.children else "",
-                            suffix=self.suffix)
+        s = "<{name}: '{prefix}{literal}{children}{suffix}'>"
+        return s.format(name=self.name,
+                        prefix=self.prefix,
+                        literal=self.literal,
+                        children="<children>" if self.children else "",
+                        suffix=self.suffix)
 
     ####################################################################################################################
     def __repr__(self):
@@ -36,16 +33,9 @@ class Node(object):
         self.children.append(node)
 
     ####################################################################################################################
-    def traverse(self):
-        yield self
-        for c in self.children:
-            yield c
-            for descendant in c.traverse():
-                yield descendant
-
-    ####################################################################################################################
     def serialize(self):
         print("SERIALIZING: {}".format(self))
+
         print("ESCAPING: {}".format(self.escape))
         if self.escape:
             self.prefix = re.escape(self.prefix)
@@ -54,10 +44,13 @@ class Node(object):
 
         print("Prefix: {}".format(self.prefix))
         yield self.prefix
+
         print("Literal: {}".format(self.literal))
         yield self.literal
+
         for child in self.children:
             yield from child.serialize()
+
         print("Suffix: {}".format(self.suffix))
         yield self.suffix
 
@@ -65,8 +58,7 @@ class Node(object):
 ########################################################################################################################
 class Rex(object):
     """Builds elements of a regular expression into a tree data structure
-    using Node objects. The primary node is stored on the attribute 'root'.
-    """
+    using Node objects. The primary node is stored on the attribute 'root'."""
 
     ####################################################################################################################
     def __init__(self):
@@ -80,8 +72,7 @@ class Rex(object):
 
     ####################################################################################################################
     def expression(self):
-        parts = list(self.root.serialize())
-        return "".join(parts)
+        return "".join(self.root.serialize())
 
     ####################################################################################################################
     def add_node(self, name, literal, prefix="", suffix="", parent=None):
