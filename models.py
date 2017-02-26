@@ -77,17 +77,15 @@ class Rex(object):
     ####################################################################################################################
     def add_node(self, name, literal, prefix="", suffix="", parent=None):
         node = Node(name, literal, prefix=prefix, suffix=suffix)
-        print("Creating new {name} node: {repr}".format(name=name, repr=node))
-        node.parent = self.parent
-        print("Added parent {name}: {repr}".format(name=node.parent.name, repr=node.parent))
+        print("\nCreating new node: {}".format(node))
 
         self.last_added = node
-        if not self.root:
-            self.root = node
-            print("Added as root node.")
+
+        node.parent = self.parent
+        print("\tAdded parent: {}".format(node.parent))
         if self.parent:
             self.parent.add_child(node)
-            print("Added as child node to {name}: {repr}".format(name=self.parent.name, repr=self.parent))
+            print("\tAdded as child node to {}".format(self.parent))
 
     ####################################################################################################################
     @property
@@ -111,7 +109,9 @@ class Rex(object):
     ####################################################################################################################
     @property
     def end_group(self):
+        original_parent = self.parent
         self.parent = self.parent.parent
+        print("\nModifier node 'end_group':\n\tChanged parent from {original} to {new}".format(original=original_parent, new=self.parent))
         return self
 
     ####################################################################################################################

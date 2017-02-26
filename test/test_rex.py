@@ -1,11 +1,20 @@
+import os
 import re
 import unittest
 
 from models import Rex
 
+base_dir = os.path.dirname(__file__)
+data_dir = os.path.join(base_dir, "data")
+
 
 ########################################################################################################################
 class RexAssertions(unittest.TestCase):
+
+    ####################################################################################################################
+    @staticmethod
+    def load(filename):
+        return open(os.path.join(data_dir, filename)).read()
 
     ####################################################################################################################
     def assert_groups(self, text, rex, re_compiled, expected_groups):
@@ -14,7 +23,7 @@ class RexAssertions(unittest.TestCase):
 
         print("Rex expression: ", rex.expression())
         rex_groups = re.search(rex.compile(), text).groups()
-        self.assertEqual(expected_groups, rex_groups)
+        self.assertEqual(tuple(expected_groups), rex_groups)
 
 
 ########################################################################################################################
@@ -57,7 +66,7 @@ class TestRex(RexAssertions):
         self.assertTrue(re.search(rex.compile(), text))
 
     ####################################################################################################################
-    def test_write(self):
+    def test_plain_text(self):
         blah = Rex().b.l.a.h
         self.assert_expression("blergblahb loasdf", blah, re.compile("blah"))
 
@@ -129,3 +138,26 @@ class TestRex(RexAssertions):
                            rex=rex,
                            re_compiled=re_compiled,
                            expected_groups=("405", "867", "5309"))
+
+    ####################################################################################################################
+    def test_html_brackets(self):
+        text = "<span>heyo</span>"
+        rex = (Rex().open_bracket.s.p.a.n.close_bracket
+               .group.zero_or_more_of.any_character.end_group
+               .open_bracket.forwardslash.s.p.a.n.close_bracket)
+        re_compiled = re.compile("<span>.*</span>")
+        # self.assert_groups(text=text,
+        #                    rex=rex,
+        #                    re_compiled=re_compiled,
+        #                    expected_groups=["heyo"])
+
+    ####################################################################################################################
+    def test_price(self):
+        # text = """<span class="price current-price">$19.99</span>"""
+        text = self.load("bn_taming_fire.html")
+        rex = (Rex().c.l.a.s.s.equals.double_quote
+               .p.r.i.c.e.single_space.c.u.r.r.e.n.t.dash.p.r.i.c.e
+               .double_quote.end_bracket.dollar_sign
+               .group._)
+        # self.fail("Test brackets")
+        # self.fail("Test variable number of digits")
