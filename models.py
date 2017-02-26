@@ -149,6 +149,11 @@ class Rex(object):
 
     ####################################################################################################################
     @property
+    def numbers(self):
+        return self.digits
+
+    ####################################################################################################################
+    @property
     def exactly(self):
         self.add_node("exactly", "{", suffix="}", parent=self.last_added)
         return self
@@ -344,6 +349,18 @@ class Rex(object):
     @property
     def question_mark(self):
         self.add_node("question_mark", "\?")
+        return self
+
+    ####################################################################################################################
+    @property
+    def single_quote(self):
+        self.add_node("single_quote", "'")
+        return self
+
+    ####################################################################################################################
+    @property
+    def double_quote(self):
+        self.add_node("double_quote", '"')
         return self
 
     ####################################################################################################################
