@@ -142,24 +142,34 @@ class TestRex(RexAssertions):
                            expected_groups=("405", "867", "5309"))
 
     ####################################################################################################################
-    def test_html_brackets(self):
-        text = "<span>heyo</span>"
+    def test_zero_or_more_of(self):
         rex = (Rex().less_than_sign.s.p.a.n.greater_than_sign
                .group.zero_or_more_of.any_character.end_group
                .less_than_sign.forwardslash.s.p.a.n.greater_than_sign)
         re_compiled = re.compile("<span>(.*)</span>")
-        self.assert_groups(text=text,
+
+        self.assert_groups(text="<span>heyo</span>",
                            rex=rex,
                            re_compiled=re_compiled,
                            expected_groups=["heyo"])
 
+        self.assert_groups(text="<span></span>",
+                           rex=rex,
+                           re_compiled=re_compiled,
+                           expected_groups=[""])
+
+        self.assert_groups(text="<span>*</span>",
+                           rex=rex,
+                           re_compiled=re_compiled,
+                           expected_groups=["*"])
+
     ####################################################################################################################
     # def test_price(self):
-        # text = """<span class="price current-price">$19.99</span>"""
-        # text = self.load("bn_taming_fire.html")
-        # rex = (Rex().c.l.a.s.s.equals.double_quote
-        #        .p.r.i.c.e.single_space.c.u.r.r.e.n.t.dash.p.r.i.c.e
-        #        .double_quote.end_bracket.dollar_sign
-        #        .group._)
-        # self.fail("Test brackets")
-        # self.fail("Test variable number of digits")
+    #     # text = """<span class="price current-price">$19.99</span>"""
+    #     text = self.load("bn_taming_fire.html")
+    #     rex = (Rex().c.l.a.s.s.equals.double_quote
+    #            .p.r.i.c.e.single_space.c.u.r.r.e.n.t.dash.p.r.i.c.e
+    #            .double_quote.end_bracket.dollar_sign
+    #            .group._)
+    #     self.fail("Test brackets")
+    #     self.fail("Test variable number of digits")
