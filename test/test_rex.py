@@ -163,18 +163,24 @@ class TestRex(RexAssertions):
                            re_compiled=re_compiled,
                            expected_groups=["*"])
 
+
+########################################################################################################################
+class TestRexAgainstPrices(RexAssertions):
+
     ####################################################################################################################
-    def test_price(self):
-        """<span class="price current-price">$19.99</span>"""
-        text = self.load("bn_taming_fire.html")
-        rex = (Rex().less_than_sign.s.p.a.n.single_space
-               .c.l.a.s.s.equals.double_quote.p.r.i.c.e
-               .single_space.c.u.r.r.e.n.t.dash.p.r.i.c.e
-               .double_quote.greater_than_sign.dollar_sign
-               .group.one_or_more_numbers.dot._2.numbers.end_group
-               .less_than_sign.forwardslash.s.p.a.n.greater_than_sign)
-        re_compiled = re.compile('<span class="price current-price">\$(\d+\.\d{2})</span>')
-        self.assert_groups(text=text,
+    def test_with_2_decimals(self):
+        re_compiled = re.compile('\$(\d+\.\d{2})')
+        rex = Rex().group.one_or_more_numbers.dot._2.numbers.end_group
+        self.assert_groups(text="The price is $19.99 plus tax.",
+                           rex=rex,
+                           re_compiled=re_compiled,
+                           expected_groups=["19.99"])
+
+    ####################################################################################################################
+    def test_ending_in_9(self):
+        re_compiled = re.compile('\$(\d+\.\d9)')
+        rex = Rex().group.one_or_more_numbers.dot.digit._9.end_group
+        self.assert_groups(text="The prices are is $19.99 plus tax.",
                            rex=rex,
                            re_compiled=re_compiled,
                            expected_groups=["19.99"])
