@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 git# Created by .ignore support plugin (hsz.mobi)
 ### Python template
+=======
+>>>>>>> a9ad15acba7df713b4fa202b549ed44848a4ebc9
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -90,5 +93,5 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Added by Carlos
 .idea/
-/rex
